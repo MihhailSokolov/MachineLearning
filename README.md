@@ -15,4 +15,4 @@ To run the script, open terminal in the directory where the script is located an
 **NB!** Make sure that you have installed all the required libraries before running the script.
 
 ## Results
-The output of any script is accuracy of the model when tested on the validation set.
+The output of any script is accuracy of the machine learning model when tested on the validation set.
