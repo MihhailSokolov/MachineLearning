@@ -18,4 +18,5 @@ To run the script, open terminal in the directory where the script is located an
 
 ## Results
 The output of any script is accuracy of the machine learning model when tested on the validation set.
+
 _P.S. CNN takes quite long to train, so be patient. During training it also outputs the current weights_
