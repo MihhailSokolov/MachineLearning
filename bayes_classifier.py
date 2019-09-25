@@ -14,24 +14,6 @@ def compute_sd(x, mean):
 
 # load the data and create the training and test sets
 iris = datasets.load_iris()
-# X is the feature vectors for the data points, and y is the target (ground truth) class for those data points 
-#  the iris.data and iris.target entries are randomly divided into training and validation sets.
-X_train, X_validation, y_train, y_validation = train_test_split(iris.data, iris.target, test_size=0.3) 
-
-# Separate the dataset into the three flower types.
-x_0 = X_train[np.where(y_train == 0)]
-x_1 = X_train[np.where(y_train == 1)]
-x_2 = X_train[np.where(y_train == 2)]
-
-# Compute the mean for each flower type.
-mean_0 = compute_mean(x_0[:, 2])
-mean_1 = compute_mean(x_1[:, 2])
-mean_2 = compute_mean(x_2[:, 2])
-
-# Compute the standard deviation for each flower type.
-sd_0 = compute_sd(x_0[:, 2], mean_0)
-sd_1 = compute_sd(x_1[:, 2], mean_1)
-sd_2 = compute_sd(x_2[:, 2], mean_2)
 
 def normal_PDF(x, mean, sd):
     return 1 / np.sqrt(2 * np.pi * (sd ** 2)) * np.e ** (- np.power(np.subtract(x, mean), 2) / (2 * (sd ** 2)))
@@ -48,11 +30,10 @@ def posterior(x, means, sds, i):
     pdf = normal_PDF(x, means[i], sds[i])
     
     # Next, we compute the sum of pdfs and use this to calculate the posterior probability
-    all_pdfs = [normal_PDF(x, means[index], sds[index]) for index in range(3)]
-    return pdf / np.sum(all_pdfs)
-
-means = [mean_0, mean_1, mean_2]
-sds = [sd_0, sd_1, sd_2]
+    pdfs = normal_PDF(x, means[0], sds[0])
+    for c in range(1, len(means)):
+        pdfs = np.add(pdfs, normal_PDF(x, means[c], sds[c]))
+    return np.divide(pdf, pdfs)
 
 def classify(x, means, sds):
     post_c1 = posterior(x, means, sds, 0)
@@ -69,4 +50,31 @@ def validate(X_validation, target, means, sds):
             correct_predictions += 1
     return correct_predictions / total_predictions
 
-print("Classifier accuracy is", validate(X_validation[:, 2], y_validation, means, sds))
+accuracies = []
+for _ in range(500):
+    # X is the feature vectors for the data points, and y is the target (ground truth) class for those data points 
+    #  the iris.data and iris.target entries are randomly divided into training and validation sets.
+    X_train, X_validation, y_train, y_validation = train_test_split(iris.data, iris.target, test_size=0.3) 
+
+    # Separate the dataset into the three flower types.
+    x_0 = X_train[np.where(y_train == 0)]
+    x_1 = X_train[np.where(y_train == 1)]
+    x_2 = X_train[np.where(y_train == 2)]
+
+    # Compute the mean for each flower type.
+    mean_0 = compute_mean(x_0[:, 2])
+    mean_1 = compute_mean(x_1[:, 2])
+    mean_2 = compute_mean(x_2[:, 2])
+
+    # Compute the standard deviation for each flower type.
+    sd_0 = compute_sd(x_0[:, 2], mean_0)
+    sd_1 = compute_sd(x_1[:, 2], mean_1)
+    sd_2 = compute_sd(x_2[:, 2], mean_2)
+
+    means = [mean_0, mean_1, mean_2]
+    sds = [sd_0, sd_1, sd_2]
+
+    accuracies.append(validate(X_validation[:, 2], y_validation, means, sds))
+
+total_accuracy = np.sum(accuracies) / len(accuracies)
+print("Classifier accuracy is", total_accuracy)
